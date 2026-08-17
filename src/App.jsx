@@ -112,7 +112,7 @@ export default function App() {
 
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(`https://learning-platform-1euu.onrender.com/api/v1/student/games/3/questions?lessonId=${lessonId}`, {
+        const response = await fetch(`https://learning-platform-1euu.onrender.com/api/v1/student/games/9/questions?lessonId=${lessonId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
