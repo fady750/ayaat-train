@@ -1,6 +1,159 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+// React createElement helper for SVGs
+const b = {
+  jsx: (tag, props) => {
+    const { children, ...rest } = props || {};
+    return React.createElement(tag, rest, children);
+  },
+  jsxs: (tag, props) => {
+    const { children, ...rest } = props || {};
+    if (Array.isArray(children)) {
+      return React.createElement(tag, rest, ...children);
+    }
+    return React.createElement(tag, rest, children);
+  }
+};
+
+const GAME_DATA = {
+    1: {
+        surah: "سورة الإخلاص الكريمة",
+        type: "quran",
+        timePerRound: 45,
+        rounds: [
+            {
+                verseBefore: "قُلْ هُوَ اللَّهُ",
+                answer: "أَحَدٌ",
+                fullVerse: "قُلْ هُوَ اللَّهُ أَحَدٌ",
+                options: ["أَحَدٌ", "كَرِيمٌ", "عَظِيمٌ", "رَحِيمٌ", "قَدِيرٌ", "عَلِيمٌ", "قَوِيٌّ"]
+            },
+            {
+                verseBefore: "اللَّهُ",
+                answer: "الصَّمَدُ",
+                fullVerse: "اللَّهُ الصَّمَدُ",
+                options: ["الصَّمَدُ", "الْوَاحِدُ", "الْأَحَدُ", "الْقَيُّومُ", "الْخَالِقُ", "الرَّزَّاقُ", "الْمَجِيدُ"]
+            },
+            {
+                verseBefore: "لَمْ يَلِدْ وَلَمْ",
+                answer: "يُولَدْ",
+                fullVerse: "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+                options: ["يُولَدْ", "يُوجَدْ", "يُعْبَدْ", "يُخْلَقْ", "يُقْهَرْ", "يُبْعَثْ", "يُهْلَكْ"]
+            },
+            {
+                verseBefore: "وَلَمْ يَكُن لَّهُ كُفُوًا",
+                answer: "أَحَدٌ",
+                fullVerse: "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ",
+                options: ["أَحَدٌ", "وَلَدٌ", "بَعِيدٌ", "شَرِيكٌ", "نَظِيرٌ", "مَثِيلٌ", "شَبِيهٌ"]
+            }
+        ]
+    },
+    2: {
+        surah: "أركان الإسلام والإيمان",
+        type: "quiz",
+        timePerRound: 35,
+        rounds: [
+            {
+                verseBefore: "أول ركن من أركان الإسلام هو",
+                answer: "الشهادتان",
+                fullVerse: "الشهادتان",
+                options: ["الشهادتان", "الصلاة", "الصوم", "الزكاة", "الحج", "الإيمان", "الجهاد"]
+            },
+            {
+                verseBefore: "عدد أركان الإيمان في الإسلام",
+                answer: "٦ أركان",
+                fullVerse: "٦ أركان",
+                options: ["٦ أركان", "٥ أركان", "٤ أركان", "٧ أركان", "٣ أركان", "٨ أركان", "١٠ أركان"]
+            },
+            {
+                verseBefore: "الركن الثاني من أركان الإسلام هو",
+                answer: "إقام الصلاة",
+                fullVerse: "إقام الصلاة",
+                options: ["إقام الصلاة", "إيتاء الزكاة", "صوم رمضان", "حج البيت", "الشهادتان", "الجهاد", "الصدقة"]
+            },
+            {
+                verseBefore: "القبلة الأولى للمسلمين هي",
+                answer: "المسجد الأقصى",
+                fullVerse: "المسجد الأقصى",
+                options: ["المسجد الأقصى", "الكعبة المشرفة", "المسجد النبوي", "مسجد قباء", "المسجد الحرام", "البيت المعمور", "مقام إبراهيم"]
+            }
+        ]
+    },
+    3: {
+        surah: "سورة الفاتحة المباركة",
+        type: "quran",
+        timePerRound: 30,
+        rounds: [
+            {
+                verseBefore: "الْحَمْدُ لِلَّهِ رَبِّ",
+                answer: "الْعَالَمِينَ",
+                fullVerse: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+                options: ["الْعَالَمِينَ", "الْمُؤْمِنِينَ", "الصَّالِحِينَ", "الْمُسْلِمِينَ", "الْمُتَّقِينَ", "التَّائِبِينَ", "الصَّادِقِينَ"]
+            },
+            {
+                verseBefore: "مَالِكِ يَوْمِ",
+                answer: "الدِّينِ",
+                fullVerse: "مَالِكِ يَوْمِ الدِّينِ",
+                options: ["الدِّينِ", "الْحَقِّ", "الْبَعْثِ", "الْقِيَامِ", "الْحِسَابِ", "الْآخِرَةِ", "الْجَزَاءِ"]
+            },
+            {
+                verseBefore: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ",
+                answer: "نَسْتَعِينُ",
+                fullVerse: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+                options: ["نَسْتَعِينُ", "نَسْتَغْفِرُ", "نَسْأَلُ", "نَحْمَدُ", "نَدْعُو", "نَشْكُرُ", "نُسَبِّحُ"]
+            },
+            {
+                verseBefore: "اهْدِنَا الصِّرَاطَ",
+                answer: "الْمُسْتَقِيمَ",
+                fullVerse: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+                options: ["الْمُسْتَقِيمَ", "الْقَوِيمَ", "الْعَظِيمَ", "الْكَرِيمَ", "الْوَاضِحَ", "السَّلِيمَ", "الْأَمِينَ"]
+            }
+        ]
+    },
+    4: {
+        surah: "قصص الأنبياء والرسل",
+        type: "quiz",
+        timePerRound: 30,
+        rounds: [
+            {
+                verseBefore: "النبي الذي لقبه أبو الأنبياء هو",
+                answer: "إبراهيم عليه السلام",
+                fullVerse: "إبراهيم عليه السلام",
+                options: ["إبراهيم عليه السلام", "آدم عليه السلام", "نوح عليه السلام", "موسى عليه السلام", "عيسى عليه السلام", "إسماعيل عليه السلام", "يعقوب عليه السلام"]
+            },
+            {
+                verseBefore: "النبي الذي ابتلعه الحوت هو",
+                answer: "يونس عليه السلام",
+                fullVerse: "يونس عليه السلام",
+                options: ["يونس عليه السلام", "يوسف عليه السلام", "أيوب عليه السلام", "سليمان عليه السلام", "داود عليه السلام", "زكريا عليه السلام", "يحيى عليه السلام"]
+            },
+            {
+                verseBefore: "النبي الذي كلم الله تكليماً هو",
+                answer: "موسى عليه السلام",
+                fullVerse: "موسى عليه السلام",
+                options: ["موسى عليه السلام", "عيسى عليه السلام", "محمد ﷺ", "إبراهيم عليه السلام", "شعيب عليه السلام", "هارون عليه السلام", "صالح عليه السلام"]
+            },
+            {
+                verseBefore: "النبي الذي كان يصنع السفينة هو",
+                answer: "نوح عليه السلام",
+                fullVerse: "نوح عليه السلام",
+                options: ["نوح عليه السلام", "هود عليه السلام", "صالح عليه السلام", "لوط عليه السلام", "إدريس عليه السلام", "آدم عليه السلام", "شعيب عليه السلام"]
+            }
+        ]
+    }
+};
+
+const GAME_ROUNDS = [];
+for (let levelId in GAME_DATA) {
+    GAME_DATA[levelId].rounds.forEach(round => {
+        GAME_ROUNDS.push({
+            ...round,
+            surah: GAME_DATA[levelId].surah,
+            type: GAME_DATA[levelId].type
+        });
+    });
+}
+
 const ARABIC_NUMS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
 function toArabicNum(n) {
     return String(n).split('').map(d => ARABIC_NUMS[parseInt(d)] || d).join('');
@@ -87,66 +240,12 @@ export default function App() {
   const [resultOverlay, setResultOverlay] = useState(null); // { status: 'success' | 'fail' | 'timeout', text: '', scoreChange: '' }
   const [particles, setParticles] = useState([]);
 
-  // API State
-  const [gameRounds, setGameRounds] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
   const containerRef = useRef(null);
   const timerRef = useRef(null);
   const animationRef = useRef(0);
 
-  const roundData = gameRounds[currentRound] || {};
-
-  // Fetch Questions
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const lessonId = params.get('lessonId');
-    const token = params.get('token');
-
-    if (!lessonId || !token) {
-      setError('الرجاء توفير معرف الدرس (lessonId) ورمز المصادقة (token) في رابط الصفحة.');
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchQuestions = async () => {
-      try {
-        const response = await fetch(`https://learning-platform-1euu.onrender.com/api/v1/student/games/9/questions?lessonId=${lessonId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        
-        if (data.success && data.data && data.data.questions) {
-          const fetchedRounds = data.data.questions.map(q => ({
-              verseBefore: q.question,
-              answer: q.correctAnswer,
-              options: q.options.map(opt => opt.text),
-              timeLimit: q.timeLimit || 30,
-              points: q.points || 10,
-              surah: data.data.lessonName || "أسئلة الدرس",
-              type: "quiz"
-          }));
-          
-          if (fetchedRounds.length === 0) {
-             setError('لا توجد أسئلة في هذا الدرس.');
-          } else {
-             setGameRounds(fetchedRounds);
-          }
-        } else {
-          setError('فشل في جلب الأسئلة. الرجاء المحاولة لاحقاً.');
-        }
-      } catch (err) {
-        setError('حدث خطأ في الاتصال بالخادم.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchQuestions();
-  }, []);
+  const roundData = GAME_ROUNDS[currentRound];
+  const currentLevel = Math.floor(currentRound / 4) + 1;
 
   // Initialize background stars
   useEffect(() => {
@@ -175,7 +274,7 @@ export default function App() {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    if (playerName.trim() && !isLoading && !error && gameRounds.length > 0) {
+    if (playerName.trim()) {
       playSFX('click', isMuted);
       setScreen('game');
       setCurrentRound(0);
@@ -189,8 +288,9 @@ export default function App() {
     setResultOverlay(null);
     setTrainX(50);
     
-    let rData = gameRounds[roundIdx];
-    let timeLimit = rData?.timeLimit || 30;
+    let rData = GAME_ROUNDS[roundIdx];
+    let lvl = Math.floor(roundIdx / 4) + 1;
+    let timeLimit = lvl === 1 ? 45 : lvl === 2 ? 35 : 30;
     setTimeLeft(timeLimit);
 
     // Set options stars in staggered vertical start lines and random lanes
@@ -205,7 +305,7 @@ export default function App() {
         text: opt,
         x: randomLeft,
         y: -10 - (idx * 22), // staggered y positions
-        speed: 0.35 + Math.random() * 0.1,
+        speed: (lvl === 1 ? 0.35 : lvl === 2 ? 0.42 : 0.48) + Math.random() * 0.08,
         isCorrect: opt === rData.answer,
         status: 'falling'
       };
@@ -289,8 +389,7 @@ export default function App() {
 
     if (star.isCorrect) {
       playSFX('correct', isMuted);
-      const pointsEarned = roundData.points || 10;
-      setScore(s => s + pointsEarned);
+      setScore(s => s + 10);
       
       // Explosion particles
       createParticles(star.x, 80);
@@ -298,7 +397,7 @@ export default function App() {
       setResultOverlay({
         status: 'success',
         text: 'أحسنت! إجابة صحيحة',
-        scoreChange: `+${toArabicNum(pointsEarned)} نقاط`
+        scoreChange: '+١٠ نقاط'
       });
 
       setTimeout(() => {
@@ -311,6 +410,9 @@ export default function App() {
       setStars(list => list.map(s => s.id === star.id ? { ...s, status: 'disabled' } : s));
       setIsAnswerLocked(false);
       
+      // Resume timer
+      let lvl = Math.floor(currentRound / 4) + 1;
+      let timeLimit = lvl === 1 ? 45 : lvl === 2 ? 35 : 30;
       // Resuming countdown
       timerRef.current = setInterval(() => {
         setTimeLeft(t => {
@@ -345,7 +447,7 @@ export default function App() {
 
   const advanceRound = () => {
     let nextIdx = currentRound + 1;
-    if (nextIdx >= gameRounds.length) {
+    if (nextIdx >= GAME_ROUNDS.length) {
       setScreen('complete');
       playSFX('win', isMuted);
     } else {
@@ -377,31 +479,21 @@ export default function App() {
 
   return (
     <div id="game-container" ref={containerRef} onPointerMove={handlePointerMove} onPointerDown={handlePointerDown}>
-      <div className="space-bg" />
-      <div className="nebula nebula-1" />
-      <div className="nebula nebula-2" />
-      <div className="nebula nebula-3" />
-      <div className="shooting-star" style={{ top: '10%', right: '10%', animationDelay: '0s' }} />
-      <div className="shooting-star" style={{ top: '25%', right: '30%', animationDelay: '4s' }} />
-      <div className="shooting-star" style={{ top: '5%', right: '50%', animationDelay: '8s' }} />
+      <div className="custom-bg" style={{ backgroundImage: 'url(bg.png)' }} />
 
       {/* Sound Toggle */}
       <div className={`sound-toggle ${isMuted ? 'muted' : ''}`} onClick={() => setIsMuted(!isMuted)}>
         {isMuted ? '🔇' : '🔊'}
       </div>
 
-      <div className="planet-surface">
-        <div className="surface-glow" />
-        <div className="surface-main" />
-        <div className="train-track" />
-      </div>
+      <div className="custom-track" style={{ backgroundImage: 'url(track.png)' }} />
 
       {screen === 'name' && (
         <div className="screen" id="name-screen">
           <div className="menu-content" style={{ width: '320px', maxWidth: '90%' }}>
             <div className="game-logo"><span className="train-emoji">🚂</span></div>
-            <h1 className="game-title">قطار الأسئلة</h1>
-            <p className="game-subtitle">أجب عن الأسئلة المتنوعة</p>
+            <h1 className="game-title">قطار الأسئلة الدينية</h1>
+            <p className="game-subtitle">أجب عن الأسئلة الإسلامية المتنوعة</p>
             <div className="glass-panel-box" style={{
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -413,33 +505,25 @@ export default function App() {
               gap: '15px',
               marginTop: '10px'
             }}>
-              {isLoading ? (
-                <div style={{ color: '#fff', fontSize: '20px', textAlign: 'center' }}>جاري التحميل...</div>
-              ) : error ? (
-                <div style={{ color: '#ef4444', fontSize: '16px', background: 'rgba(0,0,0,0.5)', padding: '15px', borderRadius: '10px', textAlign: 'center' }}>{error}</div>
-              ) : (
-                <>
-                  <label style={{ fontSize: '16px', fontWeight: '700', color: '#ffb930', textAlign: 'right', display: 'block' }}>أدخل اسم اللاعب البطل:</label>
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={e => setPlayerName(e.target.value)}
-                    placeholder="اكتب اسمك هنا..."
-                    style={{
-                      width: '100%',
-                      padding: '12px 15px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      background: 'rgba(0,0,0,0.4)',
-                      color: '#fff',
-                      fontSize: '16px',
-                      textAlign: 'center',
-                      outline: 'none'
-                    }}
-                  />
-                  <button className="btn btn-primary" onClick={handleLoginSubmit} style={{ width: '100%', padding: '12px 20px', fontSize: '16px' }}>ابدأ اللعب 🚀</button>
-                </>
-              )}
+              <label style={{ fontSize: '16px', fontWeight: '700', color: '#ffb930', textAlign: 'right', display: 'block' }}>أدخل اسم اللاعب البطل:</label>
+              <input
+                type="text"
+                value={playerName}
+                onChange={e => setPlayerName(e.target.value)}
+                placeholder="اكتب اسمك هنا..."
+                style={{
+                  width: '100%',
+                  padding: '12px 15px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  background: 'rgba(0,0,0,0.4)',
+                  color: '#fff',
+                  fontSize: '16px',
+                  textAlign: 'center',
+                  outline: 'none'
+                }}
+              />
+              <button className="btn btn-primary" onClick={handleLoginSubmit} style={{ width: '100%', padding: '12px 20px', fontSize: '16px' }}>ابدأ اللعب 🚀</button>
             </div>
           </div>
         </div>
@@ -453,7 +537,7 @@ export default function App() {
               <span>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
             </div>
             <div className="hud-item hud-level">
-              السؤال {toArabicNum(currentRound + 1)} من {toArabicNum(gameRounds.length)}
+              السؤال {toArabicNum(currentRound + 1)} من {toArabicNum(GAME_ROUNDS.length)}
             </div>
             <div className="hud-item hud-score">
               <span style={{ marginLeft: '8px', fontWeight: '600', fontSize: '13px', opacity: 0.9, color: '#ffb930' }}>{playerName}</span>
@@ -463,11 +547,11 @@ export default function App() {
           </div>
 
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${(currentRound / gameRounds.length) * 100}%` }} />
+            <div className="progress-fill" style={{ width: `${(currentRound / GAME_ROUNDS.length) * 100}%` }} />
           </div>
 
           <div className="verse-area">
-            <div className="verse-label">{roundData.type === 'quran' ? `أكمل الآية من ${roundData.surah}:` : `سؤال (${roundData.surah}):`}</div>
+            <div className="verse-label">{roundData.type === 'quran' ? `أكمل الآية من ${roundData.surah}:` : `سؤال ديني (${roundData.surah}):`}</div>
             <div className="verse-text">
               {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
             </div>
@@ -516,33 +600,10 @@ export default function App() {
           ))}
 
           <div className="train-area">
-            <div className="train" style={{ left: `${trainX}%`, transform: 'translateX(-50%)' }}>
-              <div className="wagon">
-                <div className="wagon-body">
-                  <span className="wagon-text">{isAnswerLocked ? roundData.answer : 'التقط الإجابة 🌟'}</span>
-                </div>
-                <div className="wheel wheel-1" />
-                <div className="wheel wheel-2" />
-                <div className="wheel wheel-3" />
-                <div className="wheel wheel-4" />
-                <div className="rocket-exhaust exhaust-1" />
-                <div className="rocket-exhaust exhaust-2" />
-                <div className="rocket-exhaust exhaust-3" />
-              </div>
-              <div className="coupling" />
-              <div className="locomotive">
-                <div className="loco-chimney" />
-                <div className="loco-cabin" />
-                <div className="loco-body" />
-                <div className="loco-light" />
-                <div className="loco-number">{toArabicNum(currentRound + 1)}</div>
-                <div className="wheel wheel-1" />
-                <div className="wheel wheel-2" />
-                <div className="wheel wheel-3" />
-                <div className="wheel wheel-4" />
-                <div className="rocket-exhaust exhaust-1" />
-                <div className="rocket-exhaust exhaust-2" />
-                <div className="rocket-exhaust exhaust-3" />
+            <div className="train-container" style={{ left: `${trainX}%`, transform: 'translateX(-50%)' }}>
+              <img src="train.png" alt="train" className="custom-train-img" />
+              <div className="wagon-text-overlay">
+                 {isAnswerLocked ? roundData.answer : 'التقط الإجابة 🌟'}
               </div>
             </div>
           </div>
@@ -562,7 +623,7 @@ export default function App() {
         <div className="screen" id="game-over">
           <div style={{ textAlign: 'center' }}>
             <div className="result-icon">🏆</div>
-            <div className="result-title success" id="final-title">مبارك يا {playerName}! أكملت جميع الأسئلة</div>
+            <div className="result-title success" id="final-title">مبارك يا {playerName}! أكملت جميع الأسئلة والآيات</div>
             <div className="final-score" id="final-score">{toArabicNum(score)}</div>
             <div className="level-score-detail">النتيجة النهائية الكلية</div>
             <div className="level-complete-stars" id="final-stars" style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
