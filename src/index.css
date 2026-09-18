@@ -2,6 +2,7 @@
   font-family: 'Cairo', sans-serif;
   direction: rtl;
 }
+
 body {
   margin: 0;
   padding: 0;
@@ -10,7 +11,32 @@ body {
   color: #ffffff;
   overflow-x: hidden;
 }
+
 #root {
   width: 100%;
   height: 100vh;
+}
+
+.mirza-regular {
+  font-family: "Mirza", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.mirza-medium {
+  font-family: "Mirza", serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.mirza-semibold {
+  font-family: "Mirza", serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.mirza-bold {
+  font-family: "Mirza", serif;
+  font-weight: 700;
+  font-style: normal;
 }

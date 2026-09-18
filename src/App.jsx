@@ -260,7 +260,12 @@ export default function App() {
   const animationRef = useRef(0);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    fetchQuestions();
+  }, []);
+
+  const fetchQuestions = async () => {
+    setIsLoading(true);
+    setError(null);
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const lessonId = urlParams.get('lessonId');
@@ -276,7 +281,7 @@ export default function App() {
 
         // 1. Create Session
         try {
-          const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/5/sessions?lessonId=${lessonId}`, {
+          const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -292,7 +297,7 @@ export default function App() {
         }
 
         // 2. Fetch Questions
-        const response = await fetch(`${baseUrl}/api/v1/student/games/5/questions?lessonId=${lessonId}`, {
+        const response = await fetch(`${baseUrl}/api/v1/student/games/9/questions?lessonId=${lessonId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -365,9 +370,7 @@ export default function App() {
       } finally {
         setIsLoading(false);
       }
-    };
-    fetchQuestions();
-  }, []);
+  };
 
   const roundData = apiQuestions[currentRound] || {};
   const currentLevel = Math.floor(currentRound / 4) + 1;
@@ -424,7 +427,7 @@ export default function App() {
         text: opt,
         x: randomLeft,
         y: -10 - (idx * 22),
-        speed: (lvl === 1 ? 0.35 : lvl === 2 ? 0.42 : 0.48) + Math.random() * 0.08,
+        speed: (lvl === 1 ? 0.15 : lvl === 2 ? 0.20 : 0.25) + Math.random() * 0.05,
         isCorrect: opt === rData.answer,
         status: 'falling'
       };
@@ -495,7 +498,7 @@ export default function App() {
               }
             }
 
-            if (nextY > 120) {
+            if (nextY > 85) {
               return { ...star, y: -10 };
             }
             return { ...star, y: nextY };
@@ -671,8 +674,11 @@ export default function App() {
 
   if (error) {
     return (
-      <div className="screen" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', fontSize: '24px', fontWeight: 'bold', padding: '20px', textAlign: 'center' }} dir="rtl">
-        {error}
+      <div className="screen" style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', fontSize: '24px', fontWeight: 'bold', padding: '20px', textAlign: 'center' }} dir="rtl">
+        <div>{error}</div>
+        <button className="btn btn-primary" onClick={fetchQuestions} style={{ padding: '10px 30px', fontSize: '20px' }}>
+          إعادة المحاولة
+        </button>
       </div>
     );
   }
@@ -687,13 +693,19 @@ export default function App() {
 
   return (
     <div id="game-container" ref={containerRef} onPointerMove={handlePointerMove} onPointerDown={handlePointerDown}>
-      <div className="custom-bg" style={{ backgroundImage: 'url(bg.png)' }} />
+      <div className="rotate-overlay">
+        <div className="rotate-icon">📱</div>
+        <h2>يرجى تدوير الشاشة</h2>
+        <p>هذه اللعبة مصممة للعمل في الوضع الأفقي للحصول على أفضل تجربة</p>
+      </div>
+
+      <div className="custom-bg" style={{ backgroundImage: 'url(/bg.png)' }} />
 
       <div className={`sound-toggle ${isMuted ? 'muted' : ''}`} onClick={() => setIsMuted(!isMuted)}>
         {isMuted ? '🔇' : '🔊'}
       </div>
 
-      <div className="custom-track" style={{ backgroundImage: 'url(track.png)' }} />
+      <div className="custom-track" style={{ backgroundImage: 'url(/track.png)' }} />
 
       {screen === 'name' && (
         <div className="screen" id="name-screen">
@@ -785,7 +797,7 @@ export default function App() {
 
           <div className="train-area">
             <div id="train-hitbox" className="train-container" style={{ left: `${trainX}%`, transform: 'translateX(-50%)' }}>
-              <img src="train.png" alt="train" className="custom-train-img" />
+              <img src="/train.png" alt="train" className="custom-train-img" />
             </div>
           </div>
 
