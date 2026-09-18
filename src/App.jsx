@@ -259,6 +259,64 @@ export default function App() {
   const containerRef = useRef(null);
   const timerRef = useRef(null);
   const animationRef = useRef(0);
+  const trainAudioRef = useRef(null);
+  const questionAudioRef = useRef(null);
+
+  // Train sound interval
+  useEffect(() => {
+    if (screen !== 'game' || isMuted) return;
+
+    const playTrainSound = () => {
+      if (questionAudioRef.current && !questionAudioRef.current.paused) {
+        return;
+      }
+      if (!trainAudioRef.current) {
+        trainAudioRef.current = new Audio('/trainSound.mpeg');
+      }
+      trainAudioRef.current.volume = 0.4;
+      trainAudioRef.current.play().catch(e => console.log(e));
+    };
+
+    // Small delay to allow question audio to start if it exists
+    const initialTimeout = setTimeout(() => {
+      playTrainSound();
+    }, 500);
+
+    const interval = setInterval(playTrainSound, 7000);
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+      if (trainAudioRef.current) {
+        trainAudioRef.current.pause();
+        trainAudioRef.current.currentTime = 0;
+      }
+    };
+  }, [screen, isMuted]);
+
+  // Question audio
+  useEffect(() => {
+    if (screen !== 'game' || isMuted) return;
+    const roundData = apiQuestions[currentRound];
+    if (!roundData?.audioUrl) return;
+
+    if (questionAudioRef.current) {
+      questionAudioRef.current.pause();
+    }
+    
+    if (trainAudioRef.current && !trainAudioRef.current.paused) {
+      trainAudioRef.current.pause();
+      trainAudioRef.current.currentTime = 0;
+    }
+
+    questionAudioRef.current = new Audio(roundData.audioUrl);
+    questionAudioRef.current.play().catch(e => console.log(e));
+
+    return () => {
+      if (questionAudioRef.current) {
+        questionAudioRef.current.pause();
+      }
+    };
+  }, [currentRound, screen, isMuted, apiQuestions]);
 
   useEffect(() => {
     fetchQuestions();
@@ -358,7 +416,8 @@ export default function App() {
             answer: word,
             options: options,
             type: 'quiz',
-            surah: 'تحدي'
+            surah: 'تحدي',
+            audioUrl: q.audioUrl || q.audio || null
           };
         });
         setApiQuestions(mapped);
@@ -382,7 +441,7 @@ export default function App() {
     if (!container) return;
     const rect = container.getBoundingClientRect();
     let x = ((e.clientX - rect.left) / rect.width) * 100;
-    x = Math.max(10, Math.min(x, 90));
+    x = Math.max(0, Math.min(x, 100));
     setTrainX(x);
   };
 
@@ -392,7 +451,7 @@ export default function App() {
     if (!container) return;
     const rect = container.getBoundingClientRect();
     let x = ((e.clientX - rect.left) / rect.width) * 100;
-    x = Math.max(10, Math.min(x, 90));
+    x = Math.max(0, Math.min(x, 100));
     setTrainX(x);
   };
 
@@ -767,7 +826,7 @@ export default function App() {
                   key={star.id}
                   id={`star-${star.id}`}
                   className={`falling-star ${star.status === 'correct' ? 'correct' : ''} ${star.status === 'wrong' ? 'wrong' : ''}`}
-                  style={{ left: `${star.x}%`, top: `${star.y}%` }}
+                  style={{ left: `max(10px, min(${star.x}%, calc(100vw - 390px)))`, top: `${star.y}%` }}
                   onClick={() => triggerSelection(star)}
                 >
                   <svg className="star-shape" viewBox="0 0 24 24">

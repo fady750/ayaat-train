@@ -363,11 +363,11 @@ body {
     top: 100px;
     left: 50%;
     transform: translateX(-50%);
-    width: 90%;
-    max-width: 600px;
+    width: 95%;
+    max-width: 1000px;
     text-align: center;
     z-index: 20;
-    padding: 25px;
+    padding: 35px;
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(0, 240, 255, 0.3);
@@ -448,8 +448,8 @@ body {
 
 .falling-star {
     position: absolute;
-    width: 280px;
-    height: 75px;
+    width: 380px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -460,7 +460,7 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     background-color: transparent;
-    padding: 0 50px;
+    padding: 0 70px;
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
@@ -482,7 +482,7 @@ body {
 
 .star-text {
     font-family: var(--font-quran);
-    font-size: 18px;
+    font-size: 32px;
     font-weight: 700;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -576,8 +576,8 @@ body {
     align-items: flex-end;
     justify-content: center;
     will-change: left;
-    width: 55vw;
-    max-width: 800px;
+    width: 80vw;
+    max-width: 1200px;
     animation: trainHover 2s ease-in-out infinite alternate;
 }
 
