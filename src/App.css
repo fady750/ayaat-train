@@ -19,8 +19,8 @@
     --glass-border: rgba(0, 240, 255, 0.25);
     --text-primary: #F5F7FA;
     --text-secondary: #CBD5E1;
-    --font-quran: 'FontGame', 'Amiri', serif;
-    --font-ui: 'FontGame', 'Cairo', sans-serif;
+    --font-quran: 'Scheherazade New', 'Amiri', serif;
+    --font-ui: 'Scheherazade New', 'Cairo', sans-serif;
 }
 
 * {
@@ -390,9 +390,13 @@ body {
     font-size: 38px;
     font-weight: 600;
     line-height: 1.8;
-    color: #fff;
     direction: rtl;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+    background: linear-gradient(180deg, #FFFFFF 7%, #8EBFFF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.8));
 }
 
 .verse-blank {
@@ -402,6 +406,7 @@ body {
     margin: 0 8px;
     padding: 0 15px;
     color: var(--accent-glow);
+    -webkit-text-fill-color: var(--accent-glow);
     animation: blinkBorder 1.5s ease-in-out infinite;
     font-family: var(--font-quran);
     transition: all 0.3s ease;
@@ -411,6 +416,7 @@ body {
 .verse-blank.filled {
     border-bottom-color: var(--success);
     color: var(--success);
+    -webkit-text-fill-color: var(--success);
     animation: none;
     text-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
 }
@@ -442,19 +448,20 @@ body {
 
 .falling-star {
     position: absolute;
-    width: 220px;
-    height: 100px;
+    width: 280px;
+    height: 75px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: grab;
     pointer-events: auto;
-    background: rgba(15, 23, 42, 0.7);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    background-image: url('/answer_bg.png');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    padding: 0 50px;
+    transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 /* Hide the SVG star completely */
@@ -463,8 +470,7 @@ body {
 }
 
 .falling-star:hover {
-    border-color: var(--primary);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), 0 10px 25px rgba(0, 0, 0, 0.5);
+    filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.6));
     transform: scale(1.08) translateY(-5px);
     z-index: 10;
 }
@@ -476,26 +482,29 @@ body {
 
 .star-text {
     font-family: var(--font-quran);
-    font-size: 32px;
+    font-size: 18px;
     font-weight: 700;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     pointer-events: none;
     text-align: center;
     direction: rtl;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .falling-star.correct {
-    border-color: var(--success) !important;
-    background: rgba(16, 185, 129, 0.2) !important;
-    box-shadow: 0 0 25px rgba(16, 185, 129, 0.8) !important;
+    filter: hue-rotate(-90deg) drop-shadow(0 0 25px rgba(16, 185, 129, 0.8)) !important;
     animation: correctCard 0.6s ease-out forwards !important;
 }
 
 .falling-star.wrong {
-    border-color: var(--danger) !important;
-    background: rgba(239, 68, 68, 0.2) !important;
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8) !important;
+    filter: hue-rotate(120deg) drop-shadow(0 0 25px rgba(239, 68, 68, 0.8)) !important;
     animation: wrongCard 0.5s ease-out !important;
 }
 
@@ -551,7 +560,7 @@ body {
 /* ===== TRAIN AREA ===== */
 .train-area {
     position: absolute;
-    bottom: 1vh;
+    bottom: 8vh;
     left: 0;
     right: 0;
     height: 30vh;
@@ -809,26 +818,37 @@ body {
     color: var(--primary);
     padding: 20px;
 }
+
 .rotate-overlay .rotate-icon {
     font-size: 60px;
     margin-bottom: 20px;
     animation: rotatePhone 2s ease-in-out infinite;
 }
+
 .rotate-overlay h2 {
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 10px;
     color: #fff;
 }
+
 .rotate-overlay p {
     font-size: 18px;
     color: var(--text-secondary);
 }
 
 @keyframes rotatePhone {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(90deg); }
-    100% { transform: rotate(90deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(90deg);
+    }
+
+    100% {
+        transform: rotate(90deg);
+    }
 }
 
 @media screen and (max-width: 900px) and (orientation: portrait) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import daddcoinImg from './assets/daddcoin.webp';
 
 // React createElement helper for SVGs
 const b = {
@@ -266,110 +267,110 @@ export default function App() {
   const fetchQuestions = async () => {
     setIsLoading(true);
     setError(null);
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lessonId = urlParams.get('lessonId');
+      const token = urlParams.get('token') || urlParams.get('accesstoken');
+
+      if (!lessonId || !token) {
+        setApiQuestions(GAME_ROUNDS);
+        setIsLoading(false);
+        return;
+      }
+
+      const baseUrl = 'https://learning-platform-1euu.onrender.com';
+
+      // 1. Create Session
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const lessonId = urlParams.get('lessonId');
-        const token = urlParams.get('token') || urlParams.get('accesstoken');
-
-        if (!lessonId || !token) {
-          setApiQuestions(GAME_ROUNDS);
-          setIsLoading(false);
-          return;
-        }
-
-        const baseUrl = 'https://learning-platform-1euu.onrender.com';
-
-        // 1. Create Session
-        try {
-          const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (sessionRes.ok) {
-            const sData = await sessionRes.json();
-            if (sData?.data?.id) {
-              setSessionId(sData.data.id);
-              setSessionToken(token);
-            }
-          }
-        } catch (e) {
-          console.error("Failed to create session", e);
-        }
-
-        // 2. Fetch Questions
-        const response = await fetch(`${baseUrl}/api/v1/student/games/9/questions?lessonId=${lessonId}`, {
+        const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
+          method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (!response.ok) throw new Error('فشل في جلب البيانات من الخادم.');
-        const resData = await response.json();
-
-        let fetched = [];
-        if (resData && resData.data && Array.isArray(resData.data.questions)) {
-          fetched = resData.data.questions;
-        } else if (resData && resData.data && Array.isArray(resData.data.answers)) {
-          fetched = resData.data.answers;
-        } else if (resData && resData.data && Array.isArray(resData.data)) {
-          fetched = resData.data;
-        } else if (Array.isArray(resData)) {
-          fetched = resData;
+        if (sessionRes.ok) {
+          const sData = await sessionRes.json();
+          if (sData?.data?.id) {
+            setSessionId(sData.data.id);
+            setSessionToken(token);
+          }
         }
-
-        if (fetched.length > 0) {
-          const mapped = fetched.map((q, idx) => {
-            const isOptionsFormat = q.question !== undefined && q.options !== undefined;
-            const isAnswerFormat = q.questionTitle !== undefined && q.choices !== undefined;
-            const hasChoiceDetails = q.choiceDetails !== undefined;
-
-            let questionText = 'بدون سؤال';
-            let choicesArr = [];
-            let word = 'إجابة';
-            let distractors = [];
-
-            if (isOptionsFormat) {
-              questionText = q.question || 'بدون سؤال';
-              choicesArr = q.options || [];
-              word = q.correctAnswer || 'إجابة';
-              const mappedChoices = choicesArr.map(c => typeof c === 'string' ? c : c?.text).filter(t => typeof t === 'string' && t.trim() !== '');
-              distractors = mappedChoices.filter(t => t !== word);
-            } else if (isAnswerFormat) {
-              questionText = q.questionTitle || 'بدون سؤال';
-              choicesArr = q.choices || [];
-              word = q.correctAnswer || 'إجابة';
-              const mappedChoices = choicesArr.map(c => typeof c === 'string' ? c : c?.text).filter(t => typeof t === 'string' && t.trim() !== '');
-              distractors = mappedChoices.filter(t => t !== word);
-            } else if (hasChoiceDetails) {
-              const details = q.choiceDetails || {};
-              questionText = details.title || 'بدون سؤال';
-              choicesArr = details.choices || [];
-              const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
-              const mappedChoices = choicesArr.map(c => typeof c === 'string' ? c : c?.text).filter(t => typeof t === 'string' && t.trim() !== '');
-              word = mappedChoices[correctIndex] || 'إجابة';
-              distractors = mappedChoices.filter((_, i) => i !== correctIndex);
-            }
-
-            distractors = distractors.slice(0, 3);
-            let options = [word, ...distractors].sort(() => Math.random() - 0.5);
-
-            return {
-              id: q.id || q.questionId || idx,
-              verseBefore: questionText,
-              answer: word,
-              options: options,
-              type: 'quiz',
-              surah: 'تحدي'
-            };
-          });
-          setApiQuestions(mapped);
-        } else {
-          setError('لا توجد أسئلة متاحة في هذا التقييم.');
-        }
-      } catch (err) {
-        console.error("Error fetching questions:", err);
-        setError('حدث خطأ أثناء جلب الأسئلة. يرجى المحاولة مرة أخرى.');
-      } finally {
-        setIsLoading(false);
+      } catch (e) {
+        console.error("Failed to create session", e);
       }
+
+      // 2. Fetch Questions
+      const response = await fetch(`${baseUrl}/api/v1/student/games/9/questions?lessonId=${lessonId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error('فشل في جلب البيانات من الخادم.');
+      const resData = await response.json();
+
+      let fetched = [];
+      if (resData && resData.data && Array.isArray(resData.data.questions)) {
+        fetched = resData.data.questions;
+      } else if (resData && resData.data && Array.isArray(resData.data.answers)) {
+        fetched = resData.data.answers;
+      } else if (resData && resData.data && Array.isArray(resData.data)) {
+        fetched = resData.data;
+      } else if (Array.isArray(resData)) {
+        fetched = resData;
+      }
+
+      if (fetched.length > 0) {
+        const mapped = fetched.map((q, idx) => {
+          const isOptionsFormat = q.question !== undefined && q.options !== undefined;
+          const isAnswerFormat = q.questionTitle !== undefined && q.choices !== undefined;
+          const hasChoiceDetails = q.choiceDetails !== undefined;
+
+          let questionText = 'بدون سؤال';
+          let choicesArr = [];
+          let word = 'إجابة';
+          let distractors = [];
+
+          if (isOptionsFormat) {
+            questionText = q.question || 'بدون سؤال';
+            choicesArr = q.options || [];
+            word = q.correctAnswer || 'إجابة';
+            const mappedChoices = choicesArr.map(c => typeof c === 'string' ? c : c?.text).filter(t => typeof t === 'string' && t.trim() !== '');
+            distractors = mappedChoices.filter(t => t !== word);
+          } else if (isAnswerFormat) {
+            questionText = q.questionTitle || 'بدون سؤال';
+            choicesArr = q.choices || [];
+            word = q.correctAnswer || 'إجابة';
+            const mappedChoices = choicesArr.map(c => typeof c === 'string' ? c : c?.text).filter(t => typeof t === 'string' && t.trim() !== '');
+            distractors = mappedChoices.filter(t => t !== word);
+          } else if (hasChoiceDetails) {
+            const details = q.choiceDetails || {};
+            questionText = details.title || 'بدون سؤال';
+            choicesArr = details.choices || [];
+            const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
+            const mappedChoices = choicesArr.map(c => typeof c === 'string' ? c : c?.text).filter(t => typeof t === 'string' && t.trim() !== '');
+            word = mappedChoices[correctIndex] || 'إجابة';
+            distractors = mappedChoices.filter((_, i) => i !== correctIndex);
+          }
+
+          distractors = distractors.slice(0, 3);
+          let options = [word, ...distractors].sort(() => Math.random() - 0.5);
+
+          return {
+            id: q.id || q.questionId || idx,
+            verseBefore: questionText,
+            answer: word,
+            options: options,
+            type: 'quiz',
+            surah: 'تحدي'
+          };
+        });
+        setApiQuestions(mapped);
+      } else {
+        setError('لا توجد أسئلة متاحة في هذا التقييم.');
+      }
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+      setError('حدث خطأ أثناء جلب الأسئلة. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const roundData = apiQuestions[currentRound] || {};
@@ -470,11 +471,12 @@ export default function App() {
         if (trainEl) {
           // Make the hitbox slightly smaller than the full image to feel natural
           const rect = trainEl.getBoundingClientRect();
+          // Shrink the hitbox dynamically to ignore transparent image padding
           trainRect = {
-            top: rect.top + 20,
-            bottom: rect.bottom,
-            left: rect.left + 20,
-            right: rect.right - 20
+            top: rect.top + (rect.height * 0.45),
+            bottom: rect.bottom - (rect.height * 0.1),
+            left: rect.left + (rect.width * 0.18),
+            right: rect.right - (rect.width * 0.18)
           };
         }
 
@@ -530,7 +532,7 @@ export default function App() {
       const correctCount = finalAnswers.filter(a => a.selectedAnswer !== "TIMEOUT" && a.selectedAnswer !== "").length;
       const ratio = correctCount / (apiQuestions.length || 1);
       const offlineStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio > 0 ? 1 : 0;
-      setVictoryData({ score: correctCount * 10, stars: offlineStars, coins: 0 });
+      setVictoryData({ score: correctCount * 1, stars: offlineStars, coins: 0 });
       return;
     }
 
@@ -602,19 +604,19 @@ export default function App() {
 
     if (star.isCorrect) {
       playSFX('correct', isMuted);
-      setScore(s => s + 10);
+      setScore(s => s + 1);
       createParticles(star.x, 80);
 
       setResultOverlay({
         status: 'success',
         text: 'أحسنت! إجابة صحيحة',
-        scoreChange: '+١٠ نقاط'
+        scoreChange: '+١ نقطة'
       });
 
       finishRound(true, star.text);
     } else {
       playSFX('wrong', isMuted);
-      setScore(s => Math.max(0, s - 5));
+      setScore(s => s); // no deduction when score is only 1 point
 
       setStars(list => list.map(s => s.id === star.id ? { ...s, status: 'disabled' } : s));
       setIsAnswerLocked(false);
@@ -741,7 +743,7 @@ export default function App() {
             </div>
             <div className="hud-item hud-score">
               <span style={{ marginLeft: '8px', fontWeight: '600', fontSize: '13px', opacity: 0.9, color: '#ffb930' }}>{playerName}</span>
-              <span className="hud-icon">⭐</span>
+              <img src={daddcoinImg} alt="coin" style={{ width: '22px', height: '22px', margin: '0 4px' }} />
               <span>{score}</span>
             </div>
           </div>
@@ -796,8 +798,8 @@ export default function App() {
           ))}
 
           <div className="train-area">
-            <div id="train-hitbox" className="train-container" style={{ left: `${trainX}%`, transform: 'translateX(-50%)' }}>
-              <img src="/train.png" alt="train" className="custom-train-img" />
+            <div id="train-hitbox" className="train-container" style={{ left: `${trainX}%`, transform: 'translateX(-50%)', display: 'flex', gap: '0' }}>
+              <img src="/train_new.png" alt="train" className="custom-train-img" style={{ width: '50%' }} />
             </div>
           </div>
 
