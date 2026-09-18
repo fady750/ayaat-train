@@ -523,41 +523,9 @@ export default function App() {
 
     const updatePhysics = () => {
       setStars(list => {
-        let isHit = false;
-        let hitStar = null;
-        let trainRect = null;
-        const trainEl = document.getElementById('train-hitbox');
-        if (trainEl) {
-          // Make the hitbox slightly smaller than the full image to feel natural
-          const rect = trainEl.getBoundingClientRect();
-          // Shrink the hitbox dynamically to ignore transparent image padding
-          trainRect = {
-            top: rect.top + (rect.height * 0.45),
-            bottom: rect.bottom - (rect.height * 0.1),
-            left: rect.left + (rect.width * 0.18),
-            right: rect.right - (rect.width * 0.18)
-          };
-        }
-
-        let nextList = list.map(star => {
+        return list.map(star => {
           if (star.status === 'falling') {
             let nextY = star.y + star.speed;
-
-            // Visual DOM collision detection for pixel-perfect accuracy
-            let starEl = document.getElementById(`star-${star.id}`);
-            if (starEl && trainRect) {
-              let starRect = starEl.getBoundingClientRect();
-              if (
-                starRect.bottom >= trainRect.top &&
-                starRect.top <= trainRect.bottom &&
-                starRect.right >= trainRect.left &&
-                starRect.left <= trainRect.right
-              ) {
-                isHit = true;
-                hitStar = star;
-                return { ...star, y: nextY, status: star.isCorrect ? 'correct' : 'wrong' };
-              }
-            }
 
             if (nextY > 85) {
               return { ...star, y: -10 };
@@ -566,11 +534,6 @@ export default function App() {
           }
           return star;
         });
-
-        if (isHit && hitStar) {
-          triggerSelection(hitStar);
-        }
-        return nextList;
       });
 
       animationRef.current = requestAnimationFrame(updatePhysics);
